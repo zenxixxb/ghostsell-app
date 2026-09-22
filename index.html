@@ -6,113 +6,24 @@
     <title>GhostSell</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-        body {
-            background: #0f0f0f;
-            color: #fff;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            font-size: 28px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .header p {
-            color: #888;
-            font-size: 14px;
-            margin-top: 8px;
-        }
-        .balance-card {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid #2a2a3e;
-        }
-        .balance-label {
-            color: #888;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .balance-amount {
-            font-size: 32px;
-            font-weight: bold;
-            margin-top: 8px;
-            color: #4ade80;
-        }
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 10px;
-            transition: all 0.2s;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-        }
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
-        .btn-secondary {
-            background: #1a1a2e;
-            color: #fff;
-            border: 1px solid #2a2a3e;
-        }
-        .product-card {
-            background: #1a1a2e;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 12px;
-            border: 1px solid #2a2a3e;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .product-info h3 {
-            font-size: 16px;
-            margin-bottom: 4px;
-        }
-        .product-info p {
-            color: #888;
-            font-size: 13px;
-        }
-        .product-price {
-            color: #4ade80;
-            font-weight: bold;
-            font-size: 18px;
-        }
-        .buy-btn {
-            background: #4ade80;
-            color: #000;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-left: 12px;
-        }
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin: 24px 0 12px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        body { background: #0f0f0f; color: #fff; padding: 20px; min-height: 100vh; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 28px; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header p { color: #888; font-size: 14px; margin-top: 8px; }
+        .balance-card { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid #2a2a3e; }
+        .balance-label { color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .balance-amount { font-size: 32px; font-weight: bold; margin-top: 8px; color: #4ade80; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px; transition: all 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .btn-secondary { background: #1a1a2e; color: #fff; border: 1px solid #2a2a3e; }
+        .product-card { background: #1a1a2e; border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid #2a2a3e; display: flex; justify-content: space-between; align-items: center; }
+        .product-info h3 { font-size: 16px; margin-bottom: 4px; }
+        .product-info p { color: #888; font-size: 13px; }
+        .product-price { color: #4ade80; font-weight: bold; font-size: 18px; }
+        .buy-btn { background: #4ade80; color: #000; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-left: 12px; }
+        .section-title { font-size: 18px; font-weight: 600; margin: 24px 0 12px; }
+        .loader { color: #888; text-align: center; padding: 20px; }
     </style>
 </head>
 <body>
@@ -123,19 +34,22 @@
 
     <div class="balance-card">
         <div class="balance-label">Баланс</div>
-        <div class="balance-amount" id="balance">0 ₽</div>
+        <div class="balance-amount" id="balance">— ₽</div>
     </div>
 
     <button class="btn btn-primary" onclick="topup()">💳 Пополнить баланс</button>
     <button class="btn btn-secondary" onclick="showOrders()">📋 Мои заказы</button>
 
     <div class="section-title">📦 Каталог</div>
-    <div id="products">Загрузка товаров...</div>
+    <div id="products" class="loader">Загрузка товаров...</div>
 
     <script>
+        // ⚠️ ЗАМЕНИ НА СВОЮ ССЫЛКУ RENDER
+        const API_URL = 'https://ghostsell-api.onrender.com';
+        
         const tg = window.Telegram.WebApp;
         tg.ready();
-        tg.expand();
+        // tg.expand(); // ← убери если хочешь компактное окно
 
         const user = tg.initDataUnsafe?.user;
         if (user) {
@@ -146,7 +60,7 @@
         // Загрузка баланса
         async function loadBalance() {
             try {
-                const response = await fetch('/api/balance', {
+                const response = await fetch(API_URL + '/api/balance', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: user?.id })
@@ -155,21 +69,24 @@
                 document.getElementById('balance').textContent = `${data.balance} ₽`;
             } catch (e) {
                 console.error('Ошибка загрузки баланса:', e);
+                document.getElementById('balance').textContent = 'ошибка';
             }
         }
 
         // Загрузка товаров
         async function loadProducts() {
             try {
-                const response = await fetch('/api/products');
+                const response = await fetch(API_URL + '/api/products');
                 const data = await response.json();
                 
                 const container = document.getElementById('products');
                 if (!data.products || data.products.length === 0) {
-                    container.innerHTML = '<p style="color:#888">😕 Товаров нет</p>';
+                    container.className = 'loader';
+                    container.innerHTML = '😕 Товаров нет';
                     return;
                 }
 
+                container.className = '';
                 container.innerHTML = data.products.map(p => `
                     <div class="product-card">
                         <div class="product-info">
@@ -184,7 +101,34 @@
                 `).join('');
             } catch (e) {
                 console.error('Ошибка загрузки товаров:', e);
+                document.getElementById('products').innerHTML = '❌ Ошибка загрузки';
             }
+        }
+
+        // Покупка
+        async function buy(key) {
+            tg.showConfirm('Купить товар?', async (confirmed) => {
+                if (!confirmed) return;
+                
+                try {
+                    const response = await fetch(API_URL + '/api/buy', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: user?.id, key: key })
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        tg.showAlert(`✅ ${data.message}\n\nНовый баланс: ${data.balance} ₽`);
+                        loadBalance();
+                        loadProducts();
+                    } else {
+                        tg.showAlert(`❌ ${data.error}`);
+                    }
+                } catch (e) {
+                    tg.showAlert('❌ Ошибка сети: ' + e.message);
+                }
+            });
         }
 
         function topup() {
@@ -192,18 +136,12 @@
         }
 
         function showOrders() {
-            tg.showAlert('Мои заказы скоро будут доступны');
+            tg.showAlert('Мои заказы скоро');
         }
 
-        function buy(key) {
-            tg.showConfirm(`Купить ${key}?`, (confirmed) => {
-                if (confirmed) {
-                    tg.sendData(JSON.stringify({ action: 'buy', key: key }));
-                }
-            });
+        if (user) {
+            loadBalance();
         }
-
-        loadBalance();
         loadProducts();
     </script>
 </body>
