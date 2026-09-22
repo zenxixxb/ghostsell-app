@@ -24,6 +24,10 @@
         .buy-btn { background: #4ade80; color: #000; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-left: 12px; }
         .section-title { font-size: 18px; font-weight: 600; margin: 24px 0 12px; }
         .loader { color: #888; text-align: center; padding: 20px; }
+        .order-card { background: #1a1a2e; border-radius: 12px; padding: 14px; margin-bottom: 10px; border: 1px solid #2a2a3e; }
+        .order-card h4 { font-size: 15px; margin-bottom: 6px; }
+        .order-card p { color: #888; font-size: 13px; margin-bottom: 3px; }
+        .order-card .status { color: #4ade80; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -38,18 +42,21 @@
     </div>
 
     <button class="btn btn-primary" onclick="topup()">💳 Пополнить баланс</button>
-    <button class="btn btn-secondary" onclick="showOrders()">📋 Мои заказы</button>
+    <button class="btn btn-secondary" onclick="toggleOrders()">📋 Мои заказы</button>
+
+    <div id="orders-block" style="display:none">
+        <div class="section-title">📋 Мои заказы</div>
+        <div id="orders" class="loader">Загрузка заказов...</div>
+    </div>
 
     <div class="section-title">📦 Каталог</div>
     <div id="products" class="loader">Загрузка товаров...</div>
 
     <script>
-        // ⚠️ ЗАМЕНИ НА СВОЮ ССЫЛКУ RENDER
         const API_URL = 'https://ghostsell-api.onrender.com';
         
         const tg = window.Telegram.WebApp;
         tg.ready();
-        // tg.expand(); // ← убери если хочешь компактное окно
 
         const user = tg.initDataUnsafe?.user;
         if (user) {
@@ -57,7 +64,6 @@
                 `@${user.username || 'без_ника'} · ID: ${user.id}`;
         }
 
-        // Загрузка баланса
         async function loadBalance() {
             try {
                 const response = await fetch(API_URL + '/api/balance', {
@@ -68,24 +74,21 @@
                 const data = await response.json();
                 document.getElementById('balance').textContent = `${data.balance} ₽`;
             } catch (e) {
-                console.error('Ошибка загрузки баланса:', e);
-                document.getElementById('balance').textContent = 'ошибка';
+                console.error('Ошибка баланса:', e);
+                document.getElementById('balance').textContent = '0 ₽';
             }
         }
 
-        // Загрузка товаров
         async function loadProducts() {
             try {
                 const response = await fetch(API_URL + '/api/products');
                 const data = await response.json();
-                
                 const container = document.getElementById('products');
                 if (!data.products || data.products.length === 0) {
                     container.className = 'loader';
                     container.innerHTML = '😕 Товаров нет';
                     return;
                 }
-
                 container.className = '';
                 container.innerHTML = data.products.map(p => `
                     <div class="product-card">
@@ -100,16 +103,55 @@
                     </div>
                 `).join('');
             } catch (e) {
-                console.error('Ошибка загрузки товаров:', e);
+                console.error('Ошибка товаров:', e);
                 document.getElementById('products').innerHTML = '❌ Ошибка загрузки';
             }
         }
 
-        // Покупка
+        async function loadOrders() {
+            try {
+                const response = await fetch(API_URL + '/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: user?.id })
+                });
+                const data = await response.json();
+                const container = document.getElementById('orders');
+                
+                if (!data.orders || data.orders.length === 0) {
+                    container.className = 'loader';
+                    container.innerHTML = '📭 Заказов нет';
+                    return;
+                }
+                
+                container.className = '';
+                container.innerHTML = data.orders.map((o, i) => `
+                    <div class="order-card">
+                        <h4>${i+1}. ${o.product}</h4>
+                        <p>💰 ${o.price} ₽</p>
+                        <p>📱 ${o.number || o.phone || '—'}</p>
+                        <p class="status">✅ ${o.status}</p>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Ошибка заказов:', e);
+                document.getElementById('orders').innerHTML = '❌ Ошибка загрузки';
+            }
+        }
+
+        function toggleOrders() {
+            const block = document.getElementById('orders-block');
+            if (block.style.display === 'none') {
+                block.style.display = 'block';
+                loadOrders();
+            } else {
+                block.style.display = 'none';
+            }
+        }
+
         async function buy(key) {
             tg.showConfirm('Купить товар?', async (confirmed) => {
                 if (!confirmed) return;
-                
                 try {
                     const response = await fetch(API_URL + '/api/buy', {
                         method: 'POST',
@@ -117,7 +159,6 @@
                         body: JSON.stringify({ user_id: user?.id, key: key })
                     });
                     const data = await response.json();
-                    
                     if (data.success) {
                         tg.showAlert(`✅ ${data.message}\n\nНовый баланс: ${data.balance} ₽`);
                         loadBalance();
@@ -126,21 +167,30 @@
                         tg.showAlert(`❌ ${data.error}`);
                     }
                 } catch (e) {
-                    tg.showAlert('❌ Ошибка сети: ' + e.message);
+                    tg.showAlert('❌ Ошибка сети');
                 }
             });
         }
 
         function topup() {
-            tg.showAlert('Пополнение через RollyPay скоро будет доступно');
-        }
-
-        function showOrders() {
-            tg.showAlert('Мои заказы скоро');
+            tg.showPopup({
+                title: '💳 Пополнение баланса',
+                message: 'Для пополнения напиши @zilfrec',
+                buttons: [
+                    {id: 'contact', type: 'default', text: '📩 Написать @zilfrec'},
+                    {id: 'cancel', type: 'cancel'}
+                ]
+            }, (buttonId) => {
+                if (buttonId === 'contact') {
+                    tg.openTelegramLink('https://t.me/zilfrec');
+                }
+            });
         }
 
         if (user) {
             loadBalance();
+        } else {
+            document.getElementById('balance').textContent = '0 ₽';
         }
         loadProducts();
     </script>
