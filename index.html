@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GhostSell</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        body {
+            background: #0f0f0f;
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header p {
+            color: #888;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .balance-card {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #2a2a3e;
+        }
+        .balance-label {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .balance-amount {
+            font-size: 32px;
+            font-weight: bold;
+            margin-top: 8px;
+            color: #4ade80;
+        }
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        .btn-secondary {
+            background: #1a1a2e;
+            color: #fff;
+            border: 1px solid #2a2a3e;
+        }
+        .product-card {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid #2a2a3e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .product-info h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        .product-info p {
+            color: #888;
+            font-size: 13px;
+        }
+        .product-price {
+            color: #4ade80;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .buy-btn {
+            background: #4ade80;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 12px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 24px 0 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>👻 GhostSell</h1>
+        <p id="username">Загрузка...</p>
+    </div>
+
+    <div class="balance-card">
+        <div class="balance-label">Баланс</div>
+        <div class="balance-amount" id="balance">0 ₽</div>
+    </div>
+
+    <button class="btn btn-primary" onclick="topup()">💳 Пополнить баланс</button>
+    <button class="btn btn-secondary" onclick="showOrders()">📋 Мои заказы</button>
+
+    <div class="section-title">📦 Каталог</div>
+    <div id="products">Загрузка товаров...</div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const user = tg.initDataUnsafe?.user;
+        if (user) {
+            document.getElementById('username').textContent = 
+                `@${user.username || 'без_ника'} · ID: ${user.id}`;
+        }
+
+        // Загрузка баланса
+        async function loadBalance() {
+            try {
+                const response = await fetch('/api/balance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: user?.id })
+                });
+                const data = await response.json();
+                document.getElementById('balance').textContent = `${data.balance} ₽`;
+            } catch (e) {
+                console.error('Ошибка загрузки баланса:', e);
+            }
+        }
+
+        // Загрузка товаров
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products');
+                const data = await response.json();
+                
+                const container = document.getElementById('products');
+                if (!data.products || data.products.length === 0) {
+                    container.innerHTML = '<p style="color:#888">😕 Товаров нет</p>';
+                    return;
+                }
+
+                container.innerHTML = data.products.map(p => `
+                    <div class="product-card">
+                        <div class="product-info">
+                            <h3>${p.emoji || '🌍'} ${p.name}</h3>
+                            <p>В наличии: ${p.count} шт.</p>
+                        </div>
+                        <div style="display:flex;align-items:center">
+                            <span class="product-price">${p.price} ₽</span>
+                            <button class="buy-btn" onclick="buy('${p.key}')">Купить</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Ошибка загрузки товаров:', e);
+            }
+        }
+
+        function topup() {
+            tg.showAlert('Пополнение через RollyPay скоро будет доступно');
+        }
+
+        function showOrders() {
+            tg.showAlert('Мои заказы скоро будут доступны');
+        }
+
+        function buy(key) {
+            tg.showConfirm(`Купить ${key}?`, (confirmed) => {
+                if (confirmed) {
+                    tg.sendData(JSON.stringify({ action: 'buy', key: key }));
+                }
+            });
+        }
+
+        loadBalance();
+        loadProducts();
+    </script>
+</body>
+</html>
