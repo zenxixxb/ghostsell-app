@@ -25,9 +25,12 @@
         .section-title { font-size: 18px; font-weight: 600; margin: 24px 0 12px; }
         .loader { color: #888; text-align: center; padding: 20px; }
         .order-card { background: #1a1a2e; border-radius: 12px; padding: 14px; margin-bottom: 10px; border: 1px solid #2a2a3e; }
-        .order-card h4 { font-size: 15px; margin-bottom: 6px; }
-        .order-card p { color: #888; font-size: 13px; margin-bottom: 3px; }
-        .order-card .status { color: #4ade80; font-weight: 600; }
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .order-header h4 { font-size: 15px; }
+        .order-card p { color: #888; font-size: 13px; margin-bottom: 4px; }
+        .order-card .status { font-size: 18px; }
+        .login-btn { width: 100%; margin-top: 10px; padding: 10px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; }
+        .login-btn:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -41,8 +44,8 @@
         <div class="balance-amount" id="balance">— ₽</div>
     </div>
 
-    <button class="btn btn-primary" onclick="topup()">💳 Пополнить баланс</button>
-    <button class="btn btn-secondary" onclick="toggleOrders()">📋 Мои заказы</button>
+    <button class="btn btn-primary" onclick="пополнить()">💳 Пополнить баланс</button>
+    <button class="btn btn-secondary" onclick="переключитьЗаказы()">📋 Мои заказы</button>
 
     <div id="orders-block" style="display:none">
         <div class="section-title">📋 Мои заказы</div>
@@ -54,145 +57,191 @@
 
     <script>
         const API_URL = 'https://ghostsell-api.onrender.com';
-        
+
         const tg = window.Telegram.WebApp;
         tg.ready();
 
         const user = tg.initDataUnsafe?.user;
         if (user) {
-            document.getElementById('username').textContent = 
+            document.getElementById('username').textContent =
                 `@${user.username || 'без_ника'} · ID: ${user.id}`;
         }
 
-        async function loadBalance() {
+        let заказыПользователя = [];
+
+        async function загрузитьБаланс() {
             try {
-                const response = await fetch(API_URL + '/api/balance', {
+                const ответ = await fetch(API_URL + '/api/balance', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: user?.id })
                 });
-                const data = await response.json();
-                document.getElementById('balance').textContent = `${data.balance} ₽`;
-            } catch (e) {
-                console.error('Ошибка баланса:', e);
+                const данные = await ответ.json();
+                document.getElementById('balance').textContent = `${данные.balance} ₽`;
+            } catch (ошибка) {
+                console.error('Ошибка баланса:', ошибка);
                 document.getElementById('balance').textContent = '0 ₽';
             }
         }
 
-        async function loadProducts() {
+        async function загрузитьТовары() {
             try {
-                const response = await fetch(API_URL + '/api/products');
-                const data = await response.json();
-                const container = document.getElementById('products');
-                if (!data.products || data.products.length === 0) {
-                    container.className = 'loader';
-                    container.innerHTML = '😕 Товаров нет';
+                const ответ = await fetch(API_URL + '/api/products');
+                const данные = await ответ.json();
+                const контейнер = document.getElementById('products');
+                if (!данные.products || данные.products.length === 0) {
+                    контейнер.className = 'loader';
+                    контейнер.innerHTML = '😕 Товаров нет';
                     return;
                 }
-                container.className = '';
-                container.innerHTML = data.products.map(p => `
+                контейнер.className = '';
+                контейнер.innerHTML = данные.products.map(товар => `
                     <div class="product-card">
                         <div class="product-info">
-                            <h3>${p.emoji || '🌍'} ${p.name}</h3>
-                            <p>В наличии: ${p.count} шт.</p>
+                            <h3>${товар.emoji || '🌍'} ${товар.name}</h3>
+                            <p>В наличии: ${товар.count} шт.</p>
                         </div>
                         <div style="display:flex;align-items:center">
-                            <span class="product-price">${p.price} ₽</span>
-                            <button class="buy-btn" onclick="buy('${p.key}')">Купить</button>
+                            <span class="product-price">${товар.price} ₽</span>
+                            <button class="buy-btn" onclick="купить('${товар.key}')">Купить</button>
                         </div>
                     </div>
                 `).join('');
-            } catch (e) {
-                console.error('Ошибка товаров:', e);
+            } catch (ошибка) {
+                console.error('Ошибка товаров:', ошибка);
                 document.getElementById('products').innerHTML = '❌ Ошибка загрузки';
             }
         }
 
-        async function loadOrders() {
+        async function загрузитьЗаказы() {
             try {
-                const response = await fetch(API_URL + '/api/orders', {
+                const ответ = await fetch(API_URL + '/api/orders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: user?.id })
                 });
-                const data = await response.json();
-                const container = document.getElementById('orders');
-                
-                if (!data.orders || data.orders.length === 0) {
-                    container.className = 'loader';
-                    container.innerHTML = '📭 Заказов нет';
+                const данные = await ответ.json();
+                заказыПользователя = данные.orders || [];
+                const контейнер = document.getElementById('orders');
+
+                if (!заказыПользователя || заказыПользователя.length === 0) {
+                    контейнер.className = 'loader';
+                    контейнер.innerHTML = '📭 Заказов нет';
                     return;
                 }
-                
-                container.className = '';
-                container.innerHTML = data.orders.map((o, i) => `
+
+                контейнер.className = '';
+                контейнер.innerHTML = заказыПользователя.map((заказ, номер) => `
                     <div class="order-card">
-                        <h4>${i+1}. ${o.product}</h4>
-                        <p>💰 ${o.price} ₽</p>
-                        <p>📱 ${o.number || o.phone || '—'}</p>
-                        <p class="status">✅ ${o.status}</p>
+                        <div class="order-header">
+                            <h4>${номер + 1}. ${заказ.product}</h4>
+                            <span class="status">${заказ.status === 'одобрен' ? '✅' : '⏳'}</span>
+                        </div>
+                        <p>💰 ${заказ.price} ₽</p>
+                        <p>📱 ${заказ.number || заказ.phone || '—'}</p>
+                        <button class="login-btn" onclick="открытьВход(${номер})">🔑 Войти</button>
                     </div>
                 `).join('');
-            } catch (e) {
-                console.error('Ошибка заказов:', e);
+            } catch (ошибка) {
+                console.error('Ошибка заказов:', ошибка);
                 document.getElementById('orders').innerHTML = '❌ Ошибка загрузки';
             }
         }
 
-        function toggleOrders() {
-            const block = document.getElementById('orders-block');
-            if (block.style.display === 'none') {
-                block.style.display = 'block';
-                loadOrders();
-            } else {
-                block.style.display = 'none';
+        function открытьВход(номер) {
+            const заказ = заказыПользователя[номер];
+            const телефон = заказ.number || заказ.phone || '—';
+
+            tg.showPopup({
+                title: '🔑 Вход в аккаунт',
+                message: `📱 Номер: ${телефон}\n\nНажми «Получить код» — админ отправит код в этот чат с ботом.`,
+                buttons: [
+                    { id: 'get_code', type: 'default', text: '📩 Получить код' },
+                    { id: 'cancel', type: 'cancel', text: 'Отмена' }
+                ]
+            }, async (нажатаКнопка) => {
+                if (нажатаКнопка === 'get_code') {
+                    await запроситьКод(номер, телефон);
+                }
+            });
+        }
+
+        async function запроситьКод(номер, телефон) {
+            try {
+                const ответ = await fetch(API_URL + '/api/request_code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: user?.id,
+                        order_index: номер,
+                        phone: телефон
+                    })
+                });
+                const данные = await ответ.json();
+                if (данные.success) {
+                    tg.showAlert('✅ Запрос отправлен!\n\nКод придёт в этот чат в течение 1-2 минут.');
+                } else {
+                    tg.showAlert(`❌ ${данные.error}`);
+                }
+            } catch (ошибка) {
+                tg.showAlert('❌ Ошибка сети');
             }
         }
 
-        async function buy(key) {
-            tg.showConfirm('Купить товар?', async (confirmed) => {
-                if (!confirmed) return;
+        function переключитьЗаказы() {
+            const блок = document.getElementById('orders-block');
+            if (блок.style.display === 'none') {
+                блок.style.display = 'block';
+                загрузитьЗаказы();
+            } else {
+                блок.style.display = 'none';
+            }
+        }
+
+        async function купить(ключ) {
+            tg.showConfirm('Купить товар?', async (подтверждено) => {
+                if (!подтверждено) return;
                 try {
-                    const response = await fetch(API_URL + '/api/buy', {
+                    const ответ = await fetch(API_URL + '/api/buy', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ user_id: user?.id, key: key })
+                        body: JSON.stringify({ user_id: user?.id, key: ключ })
                     });
-                    const data = await response.json();
-                    if (data.success) {
-                        tg.showAlert(`✅ ${data.message}\n\nНовый баланс: ${data.balance} ₽`);
-                        loadBalance();
-                        loadProducts();
+                    const данные = await ответ.json();
+                    if (данные.success) {
+                        tg.showAlert(`✅ ${данные.message}\n\nНовый баланс: ${данные.balance} ₽`);
+                        загрузитьБаланс();
+                        загрузитьТовары();
                     } else {
-                        tg.showAlert(`❌ ${data.error}`);
+                        tg.showAlert(`❌ ${данные.error}`);
                     }
-                } catch (e) {
+                } catch (ошибка) {
                     tg.showAlert('❌ Ошибка сети');
                 }
             });
         }
 
-        function topup() {
+        function пополнить() {
             tg.showPopup({
                 title: '💳 Пополнение баланса',
                 message: 'Для пополнения напиши @zilfrec',
                 buttons: [
-                    {id: 'contact', type: 'default', text: '📩 Написать @zilfrec'},
-                    {id: 'cancel', type: 'cancel'}
+                    { id: 'contact', type: 'default', text: '📩 Написать @zilfrec' },
+                    { id: 'cancel', type: 'cancel' }
                 ]
-            }, (buttonId) => {
-                if (buttonId === 'contact') {
+            }, (нажатаКнопка) => {
+                if (нажатаКнопка === 'contact') {
                     tg.openTelegramLink('https://t.me/zilfrec');
                 }
             });
         }
 
         if (user) {
-            loadBalance();
+            загрузитьБаланс();
         } else {
             document.getElementById('balance').textContent = '0 ₽';
         }
-        loadProducts();
+        загрузитьТовары();
     </script>
 </body>
 </html>
