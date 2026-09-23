@@ -2,246 +2,875 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>GhostSell</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-        body { background: #0f0f0f; color: #fff; padding: 20px; min-height: 100vh; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { font-size: 28px; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .header p { color: #888; font-size: 14px; margin-top: 8px; }
-        .balance-card { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid #2a2a3e; }
-        .balance-label { color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
-        .balance-amount { font-size: 32px; font-weight: bold; margin-top: 8px; color: #4ade80; }
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px; transition: all 0.2s; }
-        .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
-        .btn-secondary { background: #1a1a2e; color: #fff; border: 1px solid #2a2a3e; }
-        .product-card { background: #1a1a2e; border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid #2a2a3e; display: flex; justify-content: space-between; align-items: center; }
-        .product-info h3 { font-size: 16px; margin-bottom: 4px; }
-        .product-info p { color: #888; font-size: 13px; }
-        .product-price { color: #4ade80; font-weight: bold; font-size: 18px; }
-        .buy-btn { background: #4ade80; color: #000; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-left: 12px; }
-        .section-title { font-size: 18px; font-weight: 600; margin: 24px 0 12px; }
-        .loader { color: #888; text-align: center; padding: 20px; }
-        .order-card { background: #1a1a2e; border-radius: 12px; padding: 14px; margin-bottom: 10px; border: 1px solid #2a2a3e; }
-        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .order-header h4 { font-size: 15px; }
-        .order-card p { color: #888; font-size: 13px; margin-bottom: 4px; }
-        .order-card .status { font-size: 18px; }
-        .login-btn { width: 100%; margin-top: 10px; padding: 10px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; }
-        .login-btn:active { transform: scale(0.98); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #14141f;
+            --bg-card: #1a1a2e;
+            --border: #2a2a3e;
+            --text-primary: #ffffff;
+            --text-secondary: #888899;
+            --accent: #667eea;
+            --accent-2: #764ba2;
+            --success: #4ade80;
+            --danger: #ef4444;
+            --warning: #fbbf24;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Анимированный градиентный фон */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(118, 75, 162, 0.15) 0%, transparent 50%);
+            z-index: -1;
+            animation: bgMove 20s ease infinite;
+        }
+
+        @keyframes bgMove {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-5%, -5%); }
+        }
+
+        /* ===== КОНТЕЙНЕР ===== */
+        .container {
+            padding: 20px;
+            padding-bottom: 80px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ===== ВЕРХНЯЯ ПАНЕЛЬ ===== */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: rgba(20, 20, 31, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .theme-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .theme-btn:active { transform: scale(0.9); }
+
+        /* ===== КАРТОЧКА ПРОФИЛЯ ===== */
+        .profile-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .profile-info h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .profile-info p {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        /* ===== БАЛАНС ===== */
+        .balance-card {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; right: -20%;
+            width: 200px; height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .balance-label {
+            font-size: 13px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .balance-amount {
+            font-size: 36px;
+            font-weight: 800;
+            position: relative;
+        }
+
+        .balance-amount span {
+            font-size: 20px;
+            opacity: 0.7;
+        }
+
+        /* ===== КНОПКИ ===== */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:active { transform: scale(0.97); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: white;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        /* ===== ПОИСК ===== */
+        .search-box {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-size: 15px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent);
+        }
+
+        .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            opacity: 0.6;
+        }
+
+        /* ===== ФИЛЬТРЫ ===== */
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .filters::-webkit-scrollbar { display: none; }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: white;
+            border-color: transparent;
+        }
+
+        /* ===== ЗАГОЛОВКИ ===== */
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 24px 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-radius: 2px;
+        }
+
+        /* ===== КАРТОЧКА ТОВАРА ===== */
+        .product-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+            animation: slideUp 0.3s ease;
+        }
+
+        .product-card:active {
+            transform: scale(0.98);
+            border-color: var(--accent);
+        }
+
+        .product-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .product-info h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .product-info p {
+            color: var(--text-secondary);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .product-count {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            background: rgba(74, 222, 128, 0.1);
+            color: var(--success);
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .product-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .product-price {
+            color: var(--success);
+            font-weight: 800;
+            font-size: 18px;
+        }
+
+        .buy-btn {
+            background: linear-gradient(135deg, var(--success), #22c55e);
+            color: #000;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .buy-btn:active { transform: scale(0.95); }
+
+        /* ===== КАРТОЧКА ЗАКАЗА ===== */
+        .order-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 10px;
+            animation: slideUp 0.3s ease;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .order-header h4 {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-approved {
+            background: rgba(74, 222, 128, 0.15);
+            color: var(--success);
+        }
+
+        .status-pending {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--warning);
+        }
+
+        .status-declined {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        .order-info {
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .login-btn {
+            width: 100%;
+            margin-top: 12px;
+            padding: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        /* ===== ЗАГРУЗЧИК ===== */
+        .loader {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== НИЖНЯЯ НАВИГАЦИЯ ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(20, 20, 31, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s;
+            background: none;
+            border: none;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+        }
+
+        /* ===== СВЕТЛАЯ ТЕМА ===== */
+        body.light {
+            --bg-primary: #f5f5f7;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --border: #e5e5ea;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+        }
+
+        body.light .topbar,
+        body.light .bottom-nav {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        /* ===== УВЕДОМЛЕНИЕ ===== */
+        .toast {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 14px 20px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 200;
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>👻 GhostSell</h1>
-        <p id="username">Загрузка...</p>
+    <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
+    <div class="topbar">
+        <div class="logo">👻 GhostSell</div>
+        <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
     </div>
 
-    <div class="balance-card">
-        <div class="balance-label">Баланс</div>
-        <div class="balance-amount" id="balance">— ₽</div>
+    <!-- КОНТЕНТ -->
+    <div class="container">
+
+        <!-- ПРОФИЛЬ -->
+        <div class="profile-card">
+            <div class="avatar" id="avatar">?</div>
+            <div class="profile-info">
+                <h3 id="username">Загрузка...</h3>
+                <p id="userId">—</p>
+            </div>
+        </div>
+
+        <!-- БАЛАНС -->
+        <div class="balance-card">
+            <div class="balance-label">💰 Баланс</div>
+            <div class="balance-amount" id="balance">— <span>₽</span></div>
+        </div>
+
+        <!-- КНОПКИ -->
+        <button class="btn btn-primary" onclick="пополнить()">💳 Пополнить баланс</button>
+
+        <!-- ПОИСК -->
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Поиск товаров..." oninput="filterProducts()">
+        </div>
+
+        <!-- ФИЛЬТРЫ -->
+        <div class="filters">
+            <button class="filter-btn active" onclick="setFilter('all', this)">Все</button>
+            <button class="filter-btn" onclick="setFilter('no_spam', this)">🟢 Без спама</button>
+            <button class="filter-btn" onclick="setFilter('spam', this)">🔴 Со спамом</button>
+        </div>
+
+        <!-- КАТАЛОГ -->
+        <div class="section-title">📦 Каталог</div>
+        <div id="products" class="loader">
+            <div class="spinner"></div>
+            Загрузка товаров...
+        </div>
+
+        <!-- ЗАКАЗЫ -->
+        <div id="orders-section" style="display:none">
+            <div class="section-title">📋 Мои заказы</div>
+            <div id="orders" class="loader">
+                <div class="spinner"></div>
+                Загрузка заказов...
+            </div>
+        </div>
     </div>
 
-    <button class="btn btn-primary" onclick="пополнить()">💳 Пополнить баланс</button>
-    <button class="btn btn-secondary" onclick="переключитьЗаказы()">📋 Мои заказы</button>
-
-    <div id="orders-block" style="display:none">
-        <div class="section-title">📋 Мои заказы</div>
-        <div id="orders" class="loader">Загрузка заказов...</div>
+    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="showTab('catalog', this)">
+            <span class="nav-icon">📦</span>
+            Каталог
+        </button>
+        <button class="nav-item" onclick="showTab('orders', this)">
+            <span class="nav-icon">📋</span>
+            Заказы
+        </button>
+        <button class="nav-item" onclick="пополнить()">
+            <span class="nav-icon">💳</span>
+            Пополнить
+        </button>
+        <button class="nav-item" onclick="поддержка()">
+            <span class="nav-icon">💬</span>
+            Поддержка
+        </button>
     </div>
 
-    <div class="section-title">📦 Каталог</div>
-    <div id="products" class="loader">Загрузка товаров...</div>
+    <div class="toast" id="toast"></div>
 
     <script>
         const API_URL = 'https://ghostsell-api.onrender.com';
 
         const tg = window.Telegram.WebApp;
         tg.ready();
+        tg.expand();
 
         const user = tg.initDataUnsafe?.user;
+        let allProducts = [];
+        let currentFilter = 'all';
+
+        // ===== ПРОФИЛЬ =====
         if (user) {
-            document.getElementById('username').textContent =
-                `@${user.username || 'без_ника'} · ID: ${user.id}`;
+            const initial = (user.first_name?.[0] || user.username?.[0] || '?').toUpperCase();
+            document.getElementById('avatar').textContent = initial;
+            document.getElementById('username').textContent = 
+                user.username ? `@${user.username}` : user.first_name || 'Пользователь';
+            document.getElementById('userId').textContent = `ID: ${user.id}`;
         }
 
-        let заказыПользователя = [];
+        // ===== ТЕМА =====
+        function toggleTheme() {
+            document.body.classList.toggle('light');
+            const isLight = document.body.classList.contains('light');
+            document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        }
 
-        async function загрузитьБаланс() {
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light');
+            document.getElementById('themeBtn').textContent = '☀️';
+        }
+
+        // ===== TOAST =====
+        function showToast(text, type = '') {
+            const toast = document.getElementById('toast');
+            toast.textContent = text;
+            toast.className = 'toast show ' + type;
+            setTimeout(() => toast.className = 'toast', 3000);
+        }
+
+        // ===== ТАБЫ =====
+        function showTab(tab, el) {
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+
+            if (tab === 'catalog') {
+                document.getElementById('products').style.display = 'block';
+                document.getElementById('orders-section').style.display = 'none';
+            } else if (tab === 'orders') {
+                document.getElementById('products').style.display = 'none';
+                document.getElementById('orders-section').style.display = 'block';
+                loadOrders();
+            }
+        }
+
+        // ===== БАЛАНС =====
+        async function loadBalance() {
             try {
-                const ответ = await fetch(API_URL + '/api/balance', {
+                const r = await fetch(API_URL + '/api/balance', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: user?.id })
                 });
-                const данные = await ответ.json();
-                document.getElementById('balance').textContent = `${данные.balance} ₽`;
-            } catch (ошибка) {
-                console.error('Ошибка баланса:', ошибка);
-                document.getElementById('balance').textContent = '0 ₽';
+                const d = await r.json();
+                document.getElementById('balance').innerHTML = `${d.balance} <span>₽</span>`;
+            } catch (e) {
+                document.getElementById('balance').innerHTML = `0 <span>₽</span>`;
             }
         }
 
-        async function загрузитьТовары() {
+        // ===== ТОВАРЫ =====
+        async function loadProducts() {
             try {
-                const ответ = await fetch(API_URL + '/api/products');
-                const данные = await ответ.json();
-                const контейнер = document.getElementById('products');
-                if (!данные.products || данные.products.length === 0) {
-                    контейнер.className = 'loader';
-                    контейнер.innerHTML = '😕 Товаров нет';
-                    return;
-                }
-                контейнер.className = '';
-                контейнер.innerHTML = данные.products.map(товар => `
-                    <div class="product-card">
-                        <div class="product-info">
-                            <h3>${товар.emoji || '🌍'} ${товар.name}</h3>
-                            <p>В наличии: ${товар.count} шт.</p>
-                        </div>
-                        <div style="display:flex;align-items:center">
-                            <span class="product-price">${товар.price} ₽</span>
-                            <button class="buy-btn" onclick="купить('${товар.key}')">Купить</button>
-                        </div>
+                const r = await fetch(API_URL + '/api/products');
+                const d = await r.json();
+                allProducts = d.products || [];
+                renderProducts();
+            } catch (e) {
+                document.getElementById('products').innerHTML = '<p style="color:#888">❌ Ошибка загрузки</p>';
+            }
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('products');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = allProducts.filter(p => {
+                if (search && !p.name.toLowerCase().includes(search)) return false;
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<p style="color:#888;text-align:center;padding:20px">😕 Товаров нет</p>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(p => `
+                <div class="product-card">
+                    <div class="product-info">
+                        <h3>${p.emoji || '🌍'} ${p.name}</h3>
+                        <p>
+                            <span class="product-count">📦 ${p.count} шт.</span>
+                        </p>
                     </div>
-                `).join('');
-            } catch (ошибка) {
-                console.error('Ошибка товаров:', ошибка);
-                document.getElementById('products').innerHTML = '❌ Ошибка загрузки';
-            }
+                    <div class="product-right">
+                        <span class="product-price">${p.price} ₽</span>
+                        <button class="buy-btn" onclick="купить('${p.key}')">Купить</button>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        async function загрузитьЗаказы() {
+        function filterProducts() {
+            renderProducts();
+        }
+
+        function setFilter(f, el) {
+            currentFilter = f;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            renderProducts();
+        }
+
+        // ===== ЗАКАЗЫ =====
+        async function loadOrders() {
             try {
-                const ответ = await fetch(API_URL + '/api/orders', {
+                const r = await fetch(API_URL + '/api/orders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: user?.id })
                 });
-                const данные = await ответ.json();
-                заказыПользователя = данные.orders || [];
-                const контейнер = document.getElementById('orders');
+                const d = await r.json();
+                const orders = d.orders || [];
+                const container = document.getElementById('orders');
 
-                if (!заказыПользователя || заказыПользователя.length === 0) {
-                    контейнер.className = 'loader';
-                    контейнер.innerHTML = '📭 Заказов нет';
+                if (orders.length === 0) {
+                    container.innerHTML = '<p style="color:#888;text-align:center;padding:20px">📭 Заказов нет</p>';
                     return;
                 }
 
-                контейнер.className = '';
-                контейнер.innerHTML = заказыПользователя.map((заказ, номер) => `
-                    <div class="order-card">
-                        <div class="order-header">
-                            <h4>${номер + 1}. ${заказ.product}</h4>
-                            <span class="status">${заказ.status === 'одобрен' ? '✅' : '⏳'}</span>
+                container.innerHTML = orders.map((o, i) => {
+                    let statusClass = 'status-pending';
+                    let statusText = 'В обработке';
+                    if (o.status === 'одобрен') {
+                        statusClass = 'status-approved';
+                        statusText = 'Одобрен';
+                    } else if (o.status === 'отклонён') {
+                        statusClass = 'status-declined';
+                        statusText = 'Отклонён';
+                    }
+
+                    return `
+                        <div class="order-card">
+                            <div class="order-header">
+                                <h4>${o.product}</h4>
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>
+                            <div class="order-info">💰 ${o.price} ₽</div>
+                            <div class="order-info">📱 ${o.number || '—'}</div>
+                            <button class="login-btn" onclick="открытьВход(${i})">🔑 Войти</button>
                         </div>
-                        <p>💰 ${заказ.price} ₽</p>
-                        <p>📱 ${заказ.number || заказ.phone || '—'}</p>
-                        <button class="login-btn" onclick="открытьВход(${номер})">🔑 Войти</button>
-                    </div>
-                `).join('');
-            } catch (ошибка) {
-                console.error('Ошибка заказов:', ошибка);
-                document.getElementById('orders').innerHTML = '❌ Ошибка загрузки';
+                    `;
+                }).join('');
+            } catch (e) {
+                document.getElementById('orders').innerHTML = '<p style="color:#888">❌ Ошибка загрузки</p>';
             }
         }
 
-        function открытьВход(номер) {
-            const заказ = заказыПользователя[номер];
-            const телефон = заказ.number || заказ.phone || '—';
+        // ===== ПОКУПКА =====
+        async function купить(key) {
+            tg.showConfirm('Купить товар?', async (confirmed) => {
+                if (!confirmed) return;
+                try {
+                    const r = await fetch(API_URL + '/api/buy', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: user?.id, key })
+                    });
+                    const d = await r.json();
+                    if (d.success) {
+                        showToast(`✅ ${d.message}`, 'success');
+                        loadBalance();
+                        loadProducts();
+                    } else {
+                        showToast(`❌ ${d.error}`, 'error');
+                    }
+                } catch (e) {
+                    showToast('❌ Ошибка сети', 'error');
+                }
+            });
+        }
+
+        // ===== ВХОД =====
+        async function открытьВход(index) {
+            const r = await fetch(API_URL + '/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: user?.id })
+            });
+            const d = await r.json();
+            const order = d.orders[index];
+            const phone = order.number || '—';
 
             tg.showPopup({
                 title: '🔑 Вход в аккаунт',
-                message: `📱 Номер: ${телефон}\n\nНажми «Получить код» — админ отправит код в этот чат с ботом.`,
+                message: `📱 Номер: ${phone}\n\nНажми «Получить код» — код придёт в бот.`,
                 buttons: [
                     { id: 'get_code', type: 'default', text: '📩 Получить код' },
                     { id: 'cancel', type: 'cancel', text: 'Отмена' }
                 ]
-            }, async (нажатаКнопка) => {
-                if (нажатаКнопка === 'get_code') {
-                    await запроситьКод(номер, телефон);
-                }
-            });
-        }
-
-        async function запроситьКод(номер, телефон) {
-            try {
-                const ответ = await fetch(API_URL + '/api/request_code', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: user?.id,
-                        order_index: номер,
-                        phone: телефон
-                    })
-                });
-                const данные = await ответ.json();
-                if (данные.success) {
-                    tg.showAlert('✅ Запрос отправлен!\n\nКод придёт в этот чат в течение 1-2 минут.');
-                } else {
-                    tg.showAlert(`❌ ${данные.error}`);
-                }
-            } catch (ошибка) {
-                tg.showAlert('❌ Ошибка сети');
-            }
-        }
-
-        function переключитьЗаказы() {
-            const блок = document.getElementById('orders-block');
-            if (блок.style.display === 'none') {
-                блок.style.display = 'block';
-                загрузитьЗаказы();
-            } else {
-                блок.style.display = 'none';
-            }
-        }
-
-        async function купить(ключ) {
-            tg.showConfirm('Купить товар?', async (подтверждено) => {
-                if (!подтверждено) return;
-                try {
-                    const ответ = await fetch(API_URL + '/api/buy', {
+            }, async (btn) => {
+                if (btn === 'get_code') {
+                    await fetch(API_URL + '/api/request_code', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ user_id: user?.id, key: ключ })
+                        body: JSON.stringify({ user_id: user?.id, phone, order_index: index })
                     });
-                    const данные = await ответ.json();
-                    if (данные.success) {
-                        tg.showAlert(`✅ ${данные.message}\n\nНовый баланс: ${данные.balance} ₽`);
-                        загрузитьБаланс();
-                        загрузитьТовары();
-                    } else {
-                        tg.showAlert(`❌ ${данные.error}`);
-                    }
-                } catch (ошибка) {
-                    tg.showAlert('❌ Ошибка сети');
+                    showToast('📩 Запрос отправлен! Код придёт в бот.', 'success');
                 }
             });
         }
 
+        // ===== ПОПОЛНЕНИЕ =====
         function пополнить() {
             tg.showPopup({
                 title: '💳 Пополнение баланса',
-                message: 'Для пополнения напиши @zilfrec',
+                message: 'Напиши @zilfrec для пополнения',
                 buttons: [
-                    { id: 'contact', type: 'default', text: '📩 Написать @zilfrec' },
-                    { id: 'cancel', type: 'cancel' }
+                    { id: 'open', type: 'default', text: '📩 Написать @zilfrec' },
+                    { id: 'cancel', type: 'cancel', text: 'Отмена' }
                 ]
-            }, (нажатаКнопка) => {
-                if (нажатаКнопка === 'contact') {
-                    tg.openTelegramLink('https://t.me/zilfrec');
-                }
+            }, (btn) => {
+                if (btn === 'open') tg.openTelegramLink('https://t.me/zilfrec');
             });
         }
 
-        if (user) {
-            загрузитьБаланс();
-        } else {
-            document.getElementById('balance').textContent = '0 ₽';
+        // ===== ПОДДЕРЖКА =====
+        function поддержка() {
+            tg.openTelegramLink('https://t.me/zilfrec');
         }
-        загрузитьТовары();
+
+        // ===== ЗАПУСК =====
+        loadBalance();
+        loadProducts();
     </script>
 </body>
 </html>
