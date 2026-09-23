@@ -27,6 +27,8 @@
             --success: #4ade80;
             --danger: #ef4444;
             --warning: #fbbf24;
+            --hot: #ff4757;
+            --new: #00d2d3;
         }
 
         body {
@@ -38,7 +40,7 @@
             position: relative;
         }
 
-        /* ===== АНИМИРОВАННЫЙ ФОН С ЧАСТИЦАМИ ===== */
+        /* ===== АНИМИРОВАННЫЙ ФОН ===== */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -50,7 +52,6 @@
             background: linear-gradient(180deg, #0a0a0f 0%, #14141f 100%);
         }
 
-        /* Плавающие градиентные шары */
         .orb {
             position: absolute;
             border-radius: 50%;
@@ -65,7 +66,6 @@
             background: radial-gradient(circle, #667eea, transparent);
             top: -100px;
             left: -100px;
-            animation-delay: 0s;
         }
 
         .orb-2 {
@@ -93,7 +93,6 @@
             66% { transform: translate(-50px, 50px) scale(0.9); }
         }
 
-        /* Звёзды на фоне */
         .stars {
             position: absolute;
             top: 0;
@@ -139,10 +138,27 @@
             gap: 8px;
             font-size: 18px;
             font-weight: 800;
-            background: linear-gradient(135deg, #667eea, #f093fb);
+            background: linear-gradient(135deg, #667eea, #f093fb, #667eea);
+            background-size: 200% 200%;
+            animation: logoShimmer 4s ease infinite;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
+        }
+
+        @keyframes logoShimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .logo-ghost {
+            display: inline-block;
+            animation: ghostFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes ghostFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
         }
 
         .topbar-actions {
@@ -232,6 +248,23 @@
             box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
             position: relative;
             z-index: 1;
+            overflow: hidden;
+        }
+
+        .avatar::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: avatarShine 3s infinite;
+        }
+
+        @keyframes avatarShine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
         }
 
         .profile-info {
@@ -253,6 +286,22 @@
         .profile-info p {
             color: var(--text-secondary);
             font-size: 12px;
+        }
+
+        .online-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            margin-right: 4px;
+            box-shadow: 0 0 8px #4ade80;
+            animation: onlinePulse 2s infinite;
+        }
+
+        @keyframes onlinePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         /* ===== БАЛАНС ===== */
@@ -497,6 +546,9 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .product-count {
@@ -537,10 +589,62 @@
             cursor: pointer;
             transition: all 0.2s;
             box-shadow: 0 4px 16px rgba(74, 222, 128, 0.3);
+            position: relative;
+            overflow: hidden;
         }
 
         .buy-btn:active {
             transform: scale(0.95);
+        }
+
+        /* Бейджи */
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .badge-hot {
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            color: white;
+            animation: hotPulse 1.5s ease infinite;
+        }
+
+        .badge-new {
+            background: linear-gradient(135deg, #00d2d3, #4ade80);
+            color: #000;
+        }
+
+        .badge-sale {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #000;
+        }
+
+        @keyframes hotPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        /* ===== СКЕЛЕТОН ===== */
+        .skeleton {
+            background: linear-gradient(90deg, 
+                rgba(26, 26, 46, 0.7) 0%, 
+                rgba(102, 126, 234, 0.15) 50%, 
+                rgba(26, 26, 46, 0.7) 100%);
+            background-size: 200% 100%;
+            animation: skeletonLoad 1.5s ease infinite;
+            border-radius: 18px;
+            height: 70px;
+            margin-bottom: 10px;
+        }
+
+        @keyframes skeletonLoad {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
         /* ===== КАРТОЧКА ЗАКАЗА ===== */
@@ -622,21 +726,7 @@
             color: var(--text-secondary);
         }
 
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(102, 126, 234, 0.2);
-            border-top-color: #667eea;
-            border-radius: 50%;
-            margin: 0 auto 12px;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ===== НИЖНЯЯ НАВИГАЦИЯ (СТЕКЛЯННАЯ) ===== */
+        /* ===== НИЖНЯЯ НАВИГАЦИЯ ===== */
         .bottom-nav {
             position: fixed;
             bottom: 12px;
@@ -697,39 +787,28 @@
         }
 
         .nav-item.active .nav-icon {
-            transform: scale(1.1);
+            transform: scale(1.15);
         }
 
-        /* ===== СВЕТЛАЯ ТЕМА ===== */
-        body.light {
-            --bg-primary: #f5f5f7;
-            --bg-secondary: #ffffff;
-            --text-primary: #1a1a1a;
-            --text-secondary: #666666;
+        /* ===== КОНФЕТТИ ===== */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            z-index: 999;
+            pointer-events: none;
+            border-radius: 2px;
         }
 
-        body.light .bg-animation {
-            background: linear-gradient(180deg, #e8e8f5 0%, #f5f5f7 100%);
-        }
-
-        body.light .topbar {
-            background: rgba(255, 255, 255, 0.7);
-        }
-
-        body.light .bottom-nav {
-            background: rgba(255, 255, 255, 0.85);
-            border-color: rgba(102, 126, 234, 0.3);
-        }
-
-        body.light .product-card,
-        body.light .order-card,
-        body.light .profile-card,
-        body.light .search-box input,
-        body.light .filter-btn,
-        body.light .action-btn-secondary,
-        body.light .icon-btn {
-            background: rgba(255, 255, 255, 0.9);
-            color: #1a1a1a;
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
         }
 
         /* ===== ТОСТ ===== */
@@ -760,7 +839,37 @@
         .toast.success { border-color: #4ade80; }
         .toast.error { border-color: #ef4444; }
 
-        /* ===== ЗВЁЗДЫ НА БАЛАНСЕ ===== */
+        /* ===== СВЕТЛАЯ ТЕМА ===== */
+        body.light {
+            --bg-primary: #f5f5f7;
+            --bg-secondary: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+        }
+
+        body.light .bg-animation {
+            background: linear-gradient(180deg, #e8e8f5 0%, #f5f5f7 100%);
+        }
+
+        body.light .topbar {
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        body.light .bottom-nav {
+            background: rgba(255, 255, 255, 0.85);
+        }
+
+        body.light .product-card,
+        body.light .order-card,
+        body.light .profile-card,
+        body.light .search-box input,
+        body.light .filter-btn,
+        body.light .action-btn-secondary,
+        body.light .icon-btn {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1a1a1a;
+        }
+
         .shimmer {
             position: absolute;
             top: 0;
@@ -779,7 +888,6 @@
 </head>
 <body>
 
-    <!-- АНИМИРОВАННЫЙ ФОН -->
     <div class="bg-animation">
         <div class="stars"></div>
         <div class="orb orb-1"></div>
@@ -787,9 +895,8 @@
         <div class="orb orb-3"></div>
     </div>
 
-    <!-- ТОПБАР -->
     <div class="topbar">
-        <div class="logo">👻 GhostSell</div>
+        <div class="logo"><span class="logo-ghost">👻</span> GhostSell</div>
         <div class="topbar-actions">
             <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
             <button class="icon-btn" onclick="поддержка()">💬</button>
@@ -798,23 +905,20 @@
 
     <div class="container">
 
-        <!-- ПРОФИЛЬ -->
         <div class="profile-card">
             <div class="avatar" id="avatar">?</div>
             <div class="profile-info">
                 <h3 id="username">Загрузка...</h3>
-                <p id="userId">—</p>
+                <p><span class="online-dot"></span><span id="userId">онлайн</span></p>
             </div>
         </div>
 
-        <!-- БАЛАНС -->
         <div class="balance-card" onclick="пополнить()">
             <div class="shimmer"></div>
             <div class="balance-label">💰 Баланс</div>
             <div class="balance-amount" id="balance">— <span>₽</span></div>
         </div>
 
-        <!-- БЫСТРЫЕ КНОПКИ -->
         <div class="quick-actions">
             <button class="action-btn action-btn-primary" onclick="пополнить()">
                 💳 Пополнить
@@ -824,37 +928,31 @@
             </button>
         </div>
 
-        <!-- ПОИСК -->
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="Поиск товаров..." oninput="renderProducts()">
         </div>
 
-        <!-- ФИЛЬТРЫ -->
         <div class="filters">
             <button class="filter-btn active" onclick="setFilter('all', this)">Все</button>
             <button class="filter-btn" onclick="setFilter('no_spam', this)">🟢 Без спама</button>
             <button class="filter-btn" onclick="setFilter('spam', this)">🔴 Со спамом</button>
-            <button class="filter-btn" onclick="setFilter('cheap', this)">💸 Дешёвые</button>
+            <button class="filter-btn" onclick="setFilter('cheap', this)">💸 До 100 ₽</button>
+            <button class="filter-btn" onclick="setFilter('expensive', this)">💎 От 100 ₽</button>
         </div>
 
-        <!-- КАТАЛОГ -->
         <div class="section-title">📦 Каталог</div>
-        <div id="products" class="loader">
-            <div class="spinner"></div>
-            Загрузка товаров...
+        <div id="products">
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
         </div>
 
-        <!-- ЗАКАЗЫ -->
         <div id="orders-section" style="display:none">
             <div class="section-title">📋 Мои заказы</div>
-            <div id="orders" class="loader">
-                <div class="spinner"></div>
-                Загрузка заказов...
-            </div>
+            <div id="orders" class="loader">Загрузка заказов...</div>
         </div>
     </div>
 
-    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
     <div class="bottom-nav">
         <button class="nav-item active" onclick="showTab('catalog', this)">
             <span class="nav-icon">📦</span>
@@ -887,7 +985,6 @@
         let allProducts = [];
         let currentFilter = 'all';
 
-        // ===== ПРОФИЛЬ =====
         if (user) {
             const initial = (user.first_name?.[0] || user.username?.[0] || '?').toUpperCase();
             document.getElementById('avatar').textContent = initial;
@@ -896,7 +993,6 @@
             document.getElementById('userId').textContent = `ID: ${user.id}`;
         }
 
-        // ===== ТЕМА =====
         function toggleTheme() {
             document.body.classList.toggle('light');
             const isLight = document.body.classList.contains('light');
@@ -909,7 +1005,6 @@
             document.getElementById('themeBtn').textContent = '☀️';
         }
 
-        // ===== TOAST =====
         function showToast(text, type = '') {
             const toast = document.getElementById('toast');
             toast.textContent = text;
@@ -917,7 +1012,22 @@
             setTimeout(() => toast.className = 'toast', 3000);
         }
 
-        // ===== ТАБЫ =====
+        // ===== КОНФЕТТИ =====
+        function showConfetti() {
+            const colors = ['#667eea', '#f093fb', '#4ade80', '#fbbf24', '#ff4757', '#00d2d3'];
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '-10px';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animation = `confettiFall ${2 + Math.random() * 2}s ease-out forwards`;
+                confetti.style.animationDelay = Math.random() * 0.3 + 's';
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 4000);
+            }
+        }
+
         function showTab(tab, el) {
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
@@ -937,7 +1047,6 @@
             showTab('orders', ordersBtn);
         }
 
-        // ===== БАЛАНС =====
         async function loadBalance() {
             try {
                 const r = await fetch(API_URL + '/api/balance', {
@@ -952,7 +1061,6 @@
             }
         }
 
-        // ===== ТОВАРЫ =====
         async function loadProducts() {
             try {
                 const r = await fetch(API_URL + '/api/products');
@@ -971,6 +1079,7 @@
             let filtered = allProducts.filter(p => {
                 if (search && !p.name.toLowerCase().includes(search)) return false;
                 if (currentFilter === 'cheap' && p.price > 100) return false;
+                if (currentFilter === 'expensive' && p.price < 100) return false;
                 return true;
             });
 
@@ -979,18 +1088,26 @@
                 return;
             }
 
-            container.innerHTML = filtered.map(p => `
-                <div class="product-card">
-                    <div class="product-info">
-                        <h3>${p.emoji || '🌍'} ${p.name}</h3>
-                        <span class="product-count">📦 ${p.count} шт.</span>
+            container.innerHTML = filtered.map((p, i) => {
+                // Бейджи
+                let badges = '';
+                if (p.count >= 10) badges += '<span class="badge badge-hot">HOT</span>';
+                if (p.price < 100) badges += '<span class="badge badge-sale">-50%</span>';
+                if (i === 0) badges += '<span class="badge badge-new">NEW</span>';
+
+                return `
+                    <div class="product-card">
+                        <div class="product-info">
+                            <h3>${p.emoji || '🌍'} ${p.name} ${badges}</h3>
+                            <span class="product-count">📦 ${p.count} шт.</span>
+                        </div>
+                        <div class="product-right">
+                            <span class="product-price">${p.price} ₽</span>
+                            <button class="buy-btn" onclick="купить('${p.key}')">Купить</button>
+                        </div>
                     </div>
-                    <div class="product-right">
-                        <span class="product-price">${p.price} ₽</span>
-                        <button class="buy-btn" onclick="купить('${p.key}')">Купить</button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function setFilter(f, el) {
@@ -1000,7 +1117,6 @@
             renderProducts();
         }
 
-        // ===== ЗАКАЗЫ =====
         async function loadOrders() {
             try {
                 const r = await fetch(API_URL + '/api/orders', {
@@ -1019,7 +1135,7 @@
 
                 container.innerHTML = orders.map((o, i) => {
                     let statusClass = 'status-pending';
-                    let statusText = 'В обработке';
+                    let statusText = '⏳ В обработке';
                     if (o.status === 'одобрен') {
                         statusClass = 'status-approved';
                         statusText = '✓ Одобрен';
@@ -1045,7 +1161,6 @@
             }
         }
 
-        // ===== ПОКУПКА =====
         async function купить(key) {
             tg.showConfirm('Купить товар?', async (confirmed) => {
                 if (!confirmed) return;
@@ -1057,10 +1172,13 @@
                     });
                     const d = await r.json();
                     if (d.success) {
+                        showConfetti();
+                        tg.HapticFeedback?.notificationOccurred('success');
                         showToast(`✅ ${d.message}`, 'success');
                         loadBalance();
                         loadProducts();
                     } else {
+                        tg.HapticFeedback?.notificationOccurred('error');
                         showToast(`❌ ${d.error}`, 'error');
                     }
                 } catch (e) {
@@ -1069,7 +1187,6 @@
             });
         }
 
-        // ===== ВХОД =====
         async function открытьВход(index) {
             const r = await fetch(API_URL + '/api/orders', {
                 method: 'POST',
@@ -1094,13 +1211,14 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ user_id: user?.id, phone, order_index: index })
                     });
+                    tg.HapticFeedback?.notificationOccurred('success');
                     showToast('📩 Запрос отправлен! Код придёт в бот.', 'success');
                 }
             });
         }
 
-        // ===== ПОПОЛНЕНИЕ =====
         function пополнить() {
+            tg.HapticFeedback?.impactOccurred('medium');
             tg.showPopup({
                 title: '💳 Пополнение баланса',
                 message: 'Напиши @zilfrec для пополнения баланса',
@@ -1113,12 +1231,11 @@
             });
         }
 
-        // ===== ПОДДЕРЖКА =====
         function поддержка() {
+            tg.HapticFeedback?.impactOccurred('light');
             tg.openTelegramLink('https://t.me/zilfrec');
         }
 
-        // ===== ЗАПУСК =====
         loadBalance();
         loadProducts();
     </script>
