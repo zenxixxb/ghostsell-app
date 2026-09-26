@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GhostSell — Маркетплейс цифровых товаров</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.4;
+            animation: float 10s infinite alternate;
+        }
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 50px) scale(1.1); }
+        }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white relative">
+
+    <!-- Фоновые элементы подсветки -->
+    <div class="blob w-72 h-72 bg-emerald-600 rounded-full top-10 left-[-50px]"></div>
+    <div class="blob w-80 h-80 bg-blue-600 rounded-full bottom-20 right-[-60px]" style="animation-delay: -5s;"></div>
+
+    <!-- Верхняя панель (Header) -->
+    <header class="glass sticky top-0 z-50 px-4 py-3 flex items-center justify-between border-b border-slate-800">
+        <div class="flex items-center space-x-3">
+            <div id="user-avatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-500 to-blue-500 flex items-center justify-center font-bold text-lg shadow-lg">U</div>
+            <div>
+                <h1 id="user-name" class="font-semibold text-sm leading-tight">Загрузка...</h1>
+                <span class="text-xs text-emerald-400 font-medium flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Онлайн
+                </span>
+            </div>
+        </div>
+        <div class="glass-card px-3 py-1.5 rounded-full flex items-center gap-1.5 text-sm font-semibold text-emerald-400 border border-emerald-500/20">
+            <span id="user-balance">0.00</span> ₽
+        </div>
+    </header>
+
+    <!-- Основной контейнер -->
+    <main id="app-container" class="flex-1 max-w-md w-full mx-auto p-4 pb-24">
+        
+        <!-- Вкладка: Каталог -->
+        <div id="view-catalog" class="space-y-4">
+            <div class="flex gap-2">
+                <input type="text" id="search-input" placeholder="Поиск номеров, сервисов..." 
+                    class="w-full glass-card rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition">
+            </div>
+
+            <div class="flex gap-2 overflow-x-auto pb-1 text-xs">
+                <button onclick="filterCategory('all')" class="cat-btn px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-medium whitespace-nowrap transition">Все</button>
+                <button onclick="filterCategory('telegram')" class="cat-btn px-3 py-1.5 rounded-lg glass-card text-slate-300 whitespace-nowrap hover:bg-slate-800 transition">Telegram</button>
+                <button onclick="filterCategory('whatsapp')" class="cat-btn px-3 py-1.5 rounded-lg glass-card text-slate-300 whitespace-nowrap hover:bg-slate-800 transition">WhatsApp</button>
+                <button onclick="filterCategory('google')" class="cat-btn px-3 py-1.5 rounded-lg glass-card text-slate-300 whitespace-nowrap hover:bg-slate-800 transition">Google</button>
+            </div>
+
+            <!-- Баннер колеса фортуны -->
+            <div onclick="switchTab('games')" class="glass-card rounded-2xl p-4 relative overflow-hidden cursor-pointer group border border-emerald-500/30">
+                <div class="flex justify-between items-center relative z-10">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-wider bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold">Акция</span>
+                        <h3 class="font-bold text-base mt-1">Колесо Фортуны</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Крути и выигрывай скидки и баланс!</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-xl">🎰</div>
+                </div>
+            </div>
+
+            <!-- Список товаров -->
+            <div id="products-list" class="space-y-3"></div>
+        </div>
+        <!-- Вкладка: Игры и Бонусы -->
+        <div id="view-games" class="hidden space-y-4">
+            <div class="text-center py-4">
+                <h2 class="text-xl font-bold">Бонусы и Розыгрыши</h2>
+            </div>
+            <div class="glass-card rounded-2xl p-5 text-center space-y-3">
+                <h3 class="font-bold">Ежедневный бонус</h3>
+                <p class="text-xs text-slate-400">Забирайте бесплатные 5 ₽ каждый день.</p>
+                <button onclick="claimDailyBonus()" id="btn-daily" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 font-semibold rounded-xl text-sm transition">Забрать 5 ₽</button>
+            </div>
+            <div class="glass-card rounded-2xl p-5 text-center space-y-4">
+                <h3 class="font-bold">Колесо Удачи</h3>
+                <div id="wheel-result" class="text-sm font-semibold text-emerald-400 h-6"></div>
+                <button onclick="spinWheel()" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-blue-600 font-semibold rounded-xl text-sm transition">Крутить колесо</button>
+            </div>
+        </div>
+
+        <!-- Вкладка: Продавец -->
+        <div id="view-seller" class="hidden space-y-4">
+            <div class="glass-card rounded-2xl p-4 flex justify-between items-center">
+                <div>
+                    <span class="text-xs text-slate-400">Доступно к выводу</span>
+                    <h2 class="text-xl font-bold text-emerald-400 mt-0.5"><span id="seller-balance">0.00</span> ₽</h2>
+                </div>
+                <button onclick="requestPayout()" class="px-4 py-2 bg-slate-800 border border-slate-700 text-xs font-semibold rounded-xl">Вывести</button>
+            </div>
+            <div class="glass-card rounded-2xl p-4 space-y-3">
+                <h3 class="font-bold text-sm">Добавить товар</h3>
+                <form id="add-product-form" onsubmit="handleCreateProduct(event)" class="space-y-3">
+                    <select id="prod-service" class="w-full glass-card rounded-xl px-3 py-2 text-sm">
+                        <option value="Telegram">Telegram</option>
+                        <option value="WhatsApp">WhatsApp</option>
+                        <option value="Google">Google / Gmail</option>
+                    </select>
+                    <input type="number" id="prod-price" required placeholder="Цена (₽)" class="w-full glass-card rounded-xl px-3 py-2 text-sm">
+                    <textarea id="prod-data" required rows="2" placeholder="Номер / Данные" class="w-full glass-card rounded-xl px-3 py-2 text-sm"></textarea>
+                    <button type="submit" class="w-full py-2.5 bg-emerald-600 font-semibold rounded-xl text-sm">Опубликовать</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Вкладка: Профиль -->
+        <div id="view-profile" class="hidden space-y-4">
+            <div class="glass-card rounded-2xl p-5 text-center space-y-3">
+                <div id="profile-avatar" class="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-500 to-blue-500 mx-auto flex items-center justify-center font-bold text-3xl">U</div>
+                <h2 id="profile-name" class="font-bold text-lg">Пользователь</h2>
+                <p id="profile-id" class="text-xs text-slate-400">ID: 000000000</p>
+            </div>
+        </div>
+    </main>
+    <!-- Нижнее меню навигации -->
+    <nav class="glass fixed bottom-0 left-0 right-0 max-w-md mx-auto px-4 py-2 flex justify-around items-center border-t border-slate-800 z-50">
+        <button onclick="switchTab('catalog')" class="nav-btn flex flex-col items-center text-emerald-400" data-target="catalog">
+            <span class="text-[10px] mt-1 font-medium">Маркет</span>
+        </button>
+        <button onclick="switchTab('games')" class="nav-btn flex flex-col items-center text-slate-400" data-target="games">
+            <span class="text-[10px] mt-1 font-medium">Бонусы</span>
+        </button>
+        <button onclick="switchTab('seller')" class="nav-btn flex flex-col items-center text-slate-400" data-target="seller">
+            <span class="text-[10px] mt-1 font-medium">Продавец</span>
+        </button>
+        <button onclick="switchTab('profile')" class="nav-btn flex flex-col items-center text-slate-400" data-target="profile">
+            <span class="text-[10px] mt-1 font-medium">Профиль</span>
+        </button>
+    </nav>
+
+    <!-- Логика приложения JavaScript -->
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+
+        let state = {
+            user: {
+                id: tg.initDataUnsafe?.user?.id || 12345678,
+                name: tg.initDataUnsafe?.user?.first_name || 'Гость',
+                balance: 150.00,
+                sellerBalance: 0.00,
+                purchasesCount: 0,
+                spentTotal: 0
+            },
+            products: [
+                { id: 1, service: 'Telegram', price: 120, country: '🇷🇺 Россия', number: '+7 999 *** 4412', seller: 'Admin' },
+                { id: 2, service: 'WhatsApp', price: 90, country: '🇰🇿 Казахстан', number: '+7 705 *** 1190', seller: 'CryptoKing' }
+            ],
+            currentCategory: 'all'
+        };
+
+        function initApp() {
+            document.getElementById('user-name').innerText = state.user.name;
+            document.getElementById('profile-name').innerText = state.user.name;
+            document.getElementById('profile-id').innerText = `ID: ${state.user.id}`;
+            const initials = state.user.name.charAt(0).toUpperCase();
+            document.getElementById('user-avatar').innerText = initials;
+            document.getElementById('profile-avatar').innerText = initials;
+            updateUI();
+            renderProducts();
+        }
+
+        function updateUI() {
+            document.getElementById('user-balance').innerText = state.user.balance.toFixed(2);
+            document.getElementById('seller-balance').innerText = state.user.sellerBalance.toFixed(2);
+        }
+
+        function switchTab(tabName) {
+            ['catalog', 'games', 'seller', 'profile'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+            });
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if(btn.dataset.target === tabName) {
+                    btn.classList.remove('text-slate-400');
+                    btn.classList.add('text-emerald-400');
+                } else {
+                    btn.classList.remove('text-emerald-400');
+                    btn.classList.add('text-slate-400');
+                }
+            });
+        }
+
+        function renderProducts() {
+            const listContainer = document.getElementById('products-list');
+            listContainer.innerHTML = '';
+            const filtered = state.products.filter(p => state.currentCategory === 'all' || p.service.toLowerCase() === state.currentCategory);
+
+            filtered.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'glass-card rounded-2xl p-4 flex items-center justify-between border border-slate-800';
+                item.innerHTML = `
+                    <div>
+                        <span class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">${p.service}</span>
+                        <h4 class="font-semibold text-sm mt-1">${p.number}</h4>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-sm text-emerald-400">${p.price} ₽</div>
+                        <button onclick="buyProduct(${p.id})" class="mt-1 px-3 py-1 bg-emerald-600 text-white text-xs rounded-xl">Купить</button>
+                    </div>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        function filterCategory(cat) {
+            state.currentCategory = cat;
+            renderProducts();
+        }
+
+        function buyProduct(id) {
+            const product = state.products.find(p => p.id === id);
+            if(state.user.balance < product.price) { alert('Недостаточно средств!'); return; }
+            state.user.balance -= product.price;
+            state.products = state.products.filter(p => p.id !== id);
+            updateUI();
+            renderProducts();
+            alert('Покупка успешна!');
+        }
+
+        function claimDailyBonus() {
+            state.user.balance += 5;
+            updateUI();
+            alert('Бонус получен: 5 ₽');
+        }
+
+        function spinWheel() {
+            state.user.balance += 25;
+            updateUI();
+            document.getElementById('wheel-result').innerText = 'Вы выиграли 25 ₽!';
+        }
+
+        function handleCreateProduct(e) {
+            e.preventDefault();
+            state.products.unshift({
+                id: Date.now(),
+                service: document.getElementById('prod-service').value,
+                price: parseFloat(document.getElementById('prod-price').value),
+                number: document.getElementById('prod-data').value,
+                seller: state.user.name
+            });
+            renderProducts();
+            switchTab('catalog');
+        }
+
+        function requestPayout() {
+            state.user.sellerBalance = 0;
+            updateUI();
+            alert('Запрос на вывод отправлен.');
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
+
