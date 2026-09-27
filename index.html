@@ -75,7 +75,6 @@ body.light .gate-btn-outline { background:rgba(255,255,255,0.9); color:#0f172a; 
 <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1" fill="none" stroke="url(#gGold)" stroke-width="1.8"/><path d="M12 8v13M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" fill="none" stroke="url(#gGold)" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" fill="none" stroke="url(#gGold)" stroke-width="1.8"/></symbol>
 <symbol id="i-card" viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M2.5 10h19" stroke="#fff" stroke-width="1.8"/><circle cx="7" cy="15" r="1.2" fill="#fff"/></symbol>
 <symbol id="i-orders" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" fill="none" stroke="url(#gMain)" stroke-width="1.8" stroke-linejoin="round"/><rect x="9" y="3" width="6" height="4" rx="1" fill="none" stroke="url(#gMain)" stroke-width="1.8"/><path d="M9 12h6M9 16h4" stroke="url(#gMain)" stroke-width="1.8" stroke-linecap="round"/></symbol>
-<symbol id="i-wheel" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M12 3v18M3 12h18" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="2.5" fill="#fff"/></symbol>
 <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linejoin="round"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3M9 14h6M9 18h6M12 14v4" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/></symbol>
 <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="url(#gMain)" stroke-width="1.8"/><path d="m20 20-3.5-3.5" stroke="url(#gMain)" stroke-width="1.8" stroke-linecap="round"/></symbol>
 <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8l9 5 9-5Z" fill="none" stroke="url(#gMain)" stroke-width="1.8" stroke-linejoin="round"/><path d="M3 8v8l9 5 9-5V8M12 13v8" fill="none" stroke="url(#gMain)" stroke-width="1.8" stroke-linejoin="round"/></symbol>
@@ -172,12 +171,9 @@ body.light .gate-btn-outline { background:rgba(255,255,255,0.9); color:#0f172a; 
       <button data-filter="expensive" onclick="setFilter('expensive')" class="filter-btn px-3 py-1.5 rounded-lg glass-card text-slate-300 whitespace-nowrap flex items-center gap-1 transition"><svg class="icon icon-sm"><use href="#i-diamond"/></svg> От 100 ₽</button>
     </div>
 
-    <div class="grid grid-cols-3 gap-2">
+    <div class="grid grid-cols-2 gap-2">
       <button onclick="пополнить()" class="glass-card rounded-xl py-2.5 flex items-center justify-center gap-2 text-xs font-bold text-emerald-400">
         <svg class="icon icon-sm"><use href="#i-card"/></svg> Пополнить
-      </button>
-      <button onclick="switchTab('games')" class="glass-card rounded-xl py-2.5 flex items-center justify-center gap-2 text-xs font-bold text-amber-400">
-        <svg class="icon icon-sm"><use href="#i-wheel"/></svg> Фортуна
       </button>
       <button onclick="switchTab('chats')" class="glass-card rounded-xl py-2.5 flex items-center justify-center gap-2 text-xs font-bold text-purple-400">
         <svg class="icon icon-sm"><use href="#i-chat"/></svg> Чаты
@@ -186,31 +182,7 @@ body.light .gate-btn-outline { background:rgba(255,255,255,0.9); color:#0f172a; 
 
     <div id="products-list" class="space-y-3"></div>
   </div>
-
-  <div id="view-games" class="hidden space-y-4">
-    <div class="text-center py-2"><h2 class="text-xl font-bold">Бонусы и Розыгрыши</h2></div>
-
-    <div class="glass-card rounded-2xl p-5 text-center space-y-3">
-      <div class="w-12 h-12 mx-auto rounded-full bg-amber-500/15 flex items-center justify-center">
-        <svg class="icon icon-lg"><use href="#i-gift"/></svg>
-      </div>
-      <h3 class="font-bold">Ежедневный бонус</h3>
-      <p class="text-xs text-slate-400">Раз в 24 часа · от 5 до 20 ₽</p>
-      <p class="text-[11px] text-slate-500">Доступен после пополнения от 50 ₽</p>
-      <p id="daily-timer" class="text-[12px] text-amber-400 font-semibold min-h-[16px]"></p>
-      <button id="btn-daily" onclick="забратьБонус()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 font-semibold rounded-xl text-sm transition disabled:opacity-50 disabled:cursor-not-allowed">Забрать бонус</button>
-    </div>
-
-    <div class="glass-card rounded-2xl p-5 text-center space-y-4">
-      <div class="w-12 h-12 mx-auto rounded-full bg-purple-500/15 flex items-center justify-center">
-        <svg class="icon icon-lg"><use href="#i-wheel"/></svg>
-      </div>
-      <h3 class="font-bold">Колесо Удачи</h3>
-      <p class="text-xs text-slate-400">Раз в 7 дней · скидка до 20%</p>
-      <div id="wheel-result" class="text-sm font-semibold text-emerald-400 h-6"></div>
-      <p id="wheel-timer" class="text-[12px] text-purple-400 font-semibold min-h-[16px]"></p>
-      <button id="btn-wheel" onclick="spinWheel()" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-blue-600 font-semibold rounded-xl text-sm transition disabled:opacity-50 disabled:cursor-not-allowed">Крутить колесо</button>
-    </div>
+      <div id="products-list" class="space-y-3"></div>
   </div>
 
   <div id="view-seller" class="hidden space-y-4">
@@ -252,7 +224,10 @@ body.light .gate-btn-outline { background:rgba(255,255,255,0.9); color:#0f172a; 
           <option value="no_spam">Без спам-блока</option>
           <option value="spam">Со спам-блоком</option>
         </select>
-        <textarea id="sellNumbers" required rows="2" placeholder="Номера через запятую" class="w-full glass-card rounded-xl px-3 py-2 text-sm"></textarea>
+        <div>
+          <textarea id="sellNumbers" required rows="2" placeholder="Номера через запятую" class="w-full glass-card rounded-xl px-3 py-2 text-sm"></textarea>
+          <div class="text-[10px] text-red-400 mt-1 pl-1">Не принимаем номера +7 (Россия)</div>
+        </div>
         <button type="submit" class="w-full py-2.5 bg-emerald-600 font-semibold rounded-xl text-sm">Отправить на модерацию</button>
       </form>
     </div>
@@ -277,6 +252,18 @@ body.light .gate-btn-outline { background:rgba(255,255,255,0.9); color:#0f172a; 
         <div id="statFavs" class="text-base font-extrabold text-emerald-400">0</div>
         <div class="text-[10px] text-slate-400 uppercase font-bold mt-1">Избранных</div>
       </div>
+    </div>
+
+    <!-- Перенесённый Ежедневный бонус -->
+    <div class="glass-card rounded-2xl p-5 text-center space-y-3 mt-4">
+      <div class="w-12 h-12 mx-auto rounded-full bg-amber-500/15 flex items-center justify-center">
+        <svg class="icon icon-lg"><use href="#i-gift"/></svg>
+      </div>
+      <h3 class="font-bold">Ежедневный бонус</h3>
+      <p class="text-xs text-slate-400">Раз в 24 часа · от 5 до 20 ₽</p>
+      <p class="text-[11px] text-slate-500">Доступен после пополнения от 50 ₽</p>
+      <p id="daily-timer" class="text-[12px] text-amber-400 font-semibold min-h-[16px]"></p>
+      <button id="btn-daily" onclick="забратьБонус()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 font-semibold rounded-xl text-sm transition disabled:opacity-50 disabled:cursor-not-allowed">Забрать бонус</button>
     </div>
 
     <button onclick="показатьЗаказы()" class="glass-card rounded-2xl w-full p-4 flex items-center justify-between text-sm font-bold">
@@ -324,12 +311,9 @@ body.light .gate-btn-outline { background:rgba(255,255,255,0.9); color:#0f172a; 
   </div>
 </main>
 
-<nav class="glass fixed bottom-0 left-0 right-0 max-w-md mx-auto px-3 py-2 flex justify-around items-center border-t border-slate-800 z-50 rounded-t-2xl">
+<nav class="glass fixed bottom-0 left-0 right-0 max-w-md mx-auto px-6 py-2 flex justify-between items-center border-t border-slate-800 z-50 rounded-t-2xl">
   <button onclick="switchTab('catalog')" class="nav-btn flex flex-col items-center gap-1 py-2 px-3 rounded-xl text-emerald-400" data-target="catalog">
     <svg class="icon"><use href="#i-box"/></svg><span class="text-[10px] font-medium">Маркет</span>
-  </button>
-  <button onclick="switchTab('games')" class="nav-btn flex flex-col items-center gap-1 py-2 px-3 rounded-xl text-slate-400" data-target="games">
-    <svg class="icon"><use href="#i-gift"/></svg><span class="text-[10px] font-medium">Бонусы</span>
   </button>
   <button onclick="switchTab('chats')" class="nav-btn flex flex-col items-center gap-1 py-2 px-3 rounded-xl text-slate-400" data-target="chats">
     <svg class="icon"><use href="#i-chat"/></svg><span class="text-[10px] font-medium">Чаты</span>
@@ -341,7 +325,6 @@ body.light .gate-btn-outline { background:rgba(255,255,255,0.9); color:#0f172a; 
     <svg class="icon"><use href="#i-user"/></svg><span class="text-[10px] font-medium">Профиль</span>
   </button>
 </nav>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -358,7 +341,6 @@ let currentChatId = null;
 let chatPollInterval = null;
 
 const BONUS_COOLDOWN = 24 * 60 * 60 * 1000;
-const WHEEL_COOLDOWN = 7 * 24 * 60 * 60 * 1000;
 const CHANNEL_USERNAME = '@GhostSell_channel';
 const CHANNEL_URL = 'https://t.me/GhostSell_channel';
 const AGREEMENT_LS_KEY = 'agreement_accepted_' + (user?.id || 'anon');
@@ -409,7 +391,6 @@ async function checkSubscription() {
       btn.innerHTML = svgIcon('check','icon-sm') + ' Я подписался';
     }
   } catch (e) {
-    // При ошибке сети — пропускаем (не блокируем юзера)
     document.getElementById('gate-sub').classList.add('hidden');
     showAgreementGate();
   }
@@ -441,7 +422,6 @@ function hideAllGates() {
   loadBalance();
   loadProducts();
   loadBonusStatus();
-  refreshWheelUI();
   updateFilterButtons();
   updateStats();
 }
@@ -487,7 +467,7 @@ function setFilter(f) {
 
 /* ============ ВКЛАДКИ ============ */
 function switchTab(tabName) {
-  ['catalog', 'games', 'seller', 'profile', 'orders', 'chats', 'top'].forEach(t => {
+  ['catalog', 'seller', 'profile', 'orders', 'chats', 'top'].forEach(t => {
     const el = document.getElementById(`view-${t}`);
     if (el) el.classList.add('hidden');
   });
@@ -506,7 +486,7 @@ function switchTab(tabName) {
   if (tabName === 'orders') loadOrders();
   if (tabName === 'chats') loadChats();
   if (tabName === 'seller') { loadSellerProfile(); loadSellerProducts(); }
-  if (tabName === 'games') { refreshBonusUI(); refreshWheelUI(); }
+  if (tabName === 'profile') { refreshBonusUI(); }
 }
 function показатьЗаказы() { switchTab('orders'); }
 function показатьТоп() { switchTab('top'); loadTopBuyers(); }
@@ -583,50 +563,6 @@ async function забратьБонус() {
       refreshBonusUI();
     }
   } catch { showToast('Ошибка сети', 'error'); refreshBonusUI(); }
-}
-
-/* ============ КОЛЕСО ============ */
-function getWheelCooldownLeft() {
-  const last = parseInt(localStorage.getItem('wheel_last') || '0');
-  return Math.max(0, WHEEL_COOLDOWN - (Date.now() - last));
-}
-function refreshWheelUI() {
-  const btn = document.getElementById('btn-wheel');
-  const timerEl = document.getElementById('wheel-timer');
-  if (!btn) return;
-  const left = getWheelCooldownLeft();
-  if (left > 0) {
-    btn.disabled = true; btn.textContent = 'Уже крутил';
-    btn.classList.add('opacity-50');
-    if (timerEl) timerEl.innerHTML = `${svgIcon('check','icon-sm')} Через ${formatCooldown(left)}`;
-  } else {
-    btn.disabled = false; btn.textContent = 'Крутить колесо';
-    btn.classList.remove('opacity-50');
-    if (timerEl) timerEl.textContent = '';
-  }
-}
-async function spinWheel() {
-  if (getWheelCooldownLeft() > 0) { showToast('Следующая попытка позже', 'error'); return; }
-  const result = document.getElementById('wheel-result');
-  const btn = document.getElementById('btn-wheel');
-  btn.disabled = true;
-  result.textContent = 'Крутим...';
-  try {
-    const r = await fetch(API_URL + '/api/wheel_status', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: user?.id }) });
-    const d = await r.json();
-    if (d.can_spin === false) {
-      localStorage.setItem('wheel_last', String(Date.now()));
-      result.textContent = 'Ты уже крутил на этой неделе';
-      refreshWheelUI(); return;
-    }
-    const discount = [5, 10, 15, 20][Math.floor(Math.random() * 4)];
-    await fetch(API_URL + '/api/spin_wheel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: user?.id, discount }) });
-    localStorage.setItem('wheel_last', String(Date.now()));
-    showConfetti();
-    result.textContent = `Скидка ${discount}%`;
-    showToast(`Ты выиграл скидку ${discount}%`);
-    refreshWheelUI();
-  } catch { result.textContent = 'Ошибка'; refreshWheelUI(); }
 }
 
 /* ============ КАТАЛОГ ============ */
@@ -765,7 +701,7 @@ async function loadSellerProfile() {
     }
   } catch {}
 }
-async function loadSellerProducts() {
+  async function loadSellerProducts() {
   try {
     const r = await fetch(API_URL + '/api/seller_products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: user?.id }) });
     const d = await r.json();
@@ -780,6 +716,20 @@ async function loadSellerProducts() {
 }
 async function отправитьЗаявку(e) {
   e.preventDefault();
+  
+  const rawNumbers = document.getElementById('sellNumbers').value.trim();
+  
+  // Проверка на номера РФ
+  const hasRu = rawNumbers.split(',').some(n => {
+    const clean = n.trim();
+    return clean.startsWith('7') || clean.startsWith('+7') || /RU|Россия/i.test(clean);
+  });
+  
+  if (hasRu) {
+    showToast('❌ Российские номера временно не принимаются', 'error');
+    return;
+  }
+  
   const body = {
     user_id: user?.id,
     username: user?.username || user?.first_name || '',
@@ -788,9 +738,11 @@ async function отправитьЗаявку(e) {
     desc: document.getElementById('sellDesc').value.trim(),
     emoji: '🌍',
     category: document.getElementById('sellCategory').value,
-    numbers: document.getElementById('sellNumbers').value.trim()
+    numbers: rawNumbers
   };
+  
   if (!body.name || !body.price || !body.numbers) { showToast('Заполни все поля', 'error'); return; }
+  
   try {
     const r = await fetch(API_URL + '/api/seller_submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const d = await r.json();
@@ -887,7 +839,6 @@ function updateStats() { document.getElementById('statFavs').textContent = favor
 checkSubscription();
 setInterval(() => {
   refreshBonusUI();
-  refreshWheelUI();
 }, 1000);
 </script>
 </body>
